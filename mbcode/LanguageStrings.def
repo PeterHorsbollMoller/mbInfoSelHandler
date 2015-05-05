@@ -1,0 +1,17 @@
+
+Define	STR_MNU_END_APPLICATION				1		'"End program"
+Define 	STR_MNU_ABOUT_APPLICATION			2		'"About..."
+Define 	STR_MNU_RATE_APPLICATION				3		'"Rate the application at Community Downloads"
+Define 	STR_MNU_SHOW_INFO_SEL				4		'"Show Info on Selection"
+Define 	STR_MNU_ENABLE_DISABLE_INFO_SEL 		5		'"!Disable Info on Selection^Enable Info on Selection"
+Define 	STR_HLP_ENABLE_DISABLE_INFO_SEL 		6		'"Enable/Disable Info Window showing attributes of the selected record."
+Define 	STR_BTN_ENABLE_DISABLE_INFO_SEL		7		'"Show Info on Selection"
+
+Define	STR_BTN_SHOW_INFO					8		'"Show Info"
+Define	STR_TTIP_ENABLE_INFO_SEL				9		'"Click to Enable Info on Selection"
+Define	STR_TTIP_DISABLE_INFO_SEL			10		'"Click to Disable Info on Selection"
+Define	STR_TTIT_INFO_TOOL					11		'"Info Tool"
+Define	STR_TTIP_INFO_TOOL					12		'"Display tabular Information about map objects"
+
+Define	STR_DESCRIPTION					13		'"This application shows the attributes of the selected record in the Info Window as soon as you select a record. It only works when a single record is selected.")
+

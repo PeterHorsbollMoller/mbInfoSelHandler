@@ -1,0 +1,18 @@
+[ADMIN]
+LANGUAGE=English
+
+[STRINGS]
+1="End program"
+2="About..."
+3="Rate the application at Community Downloads"
+4="Show Info on Selection"
+5="!Disable Info on Selection^Enable Info on Selection"
+6="Enable/Disable Info Window showing attributes of the last (de)selected record."
+7="Show Info on Selection"
+
+8="Show Info"
+9="Click to Enable Info on Selection"
+10="Click to Disable Info on Selection"
+11="Info Tool"
+12="Display tabular Information about map objects"
+13="This application shows the attributes of the last (de)selected record in the Info Window as soon as you (de)select a record."

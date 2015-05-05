@@ -1,0 +1,431 @@
+'*******************************************************************************
+'**   Created by Peter Horsbøll Møller, Pitney Bowes Software
+'** 	Program:
+'** 	Modul:
+'**
+'*******************************************************************************
+
+'-------------------------------------
+Include "Enums.def"
+Include "Icons.def"
+Include "MapBasic.def"
+Include "Menu.def"
+'**default constants...
+Include "Library\Defaults.def"
+
+Include "Library\MI_ICONS_X64.def"
+Include "Library\RibbonElements.def"
+
+Define xProgram 		"InfoSelHandler"
+Define xProgramMenu		"InfoSelHandler"
+Define xVersion 		"2.0.2"
+Define xYear			"2015"
+Define xAddToMenuBar	FALSE
+
+Define FILE_INI				xProgram & ".ini"
+Define FILE_DBG				ApplicationDirectory$() & xProgram & ".dbg"
+Define FILE_HLP				ApplicationDirectory$() & "Documentation\" & xProgram 	'& ".pdf"
+Define PATH_IMAGES				ApplicationDirectory$() & "Images\"
+
+Define ICON_INFOSELHANDLER_32 	PATH_IMAGES & "InfoSelHandler_32x32.png"
+Define ICON_INFOSELHANDLER_16		PATH_IMAGES & "InfoSelHandler_16x16.png"
+
+'-------------------------------------
+Include "Library\CONFIGFILELib.def"
+Include "Library\DEBUGLib.def"
+Include "Library\ERRORLib.def"
+Include "Library\FILELib.def"
+Include "Library\ProgramInfo.def"
+Include "Library\RESSTRNGLib.def"
+Include "Library\ribbonLib.def"
+Include "Library\STRINGLib.def"
+Include "Library\TABLELib.def"
+
+'-----------------------------------------------------------------------------------------
+Include "LanguageStrings.def"
+
+'-----------------------------------------------------------------------------------------
+Declare Sub Main
+Declare Sub EndProgram
+
+Declare Sub EndHandler
+Declare Sub SelChangedHandler
+
+Declare Sub MENUGoToCommunityDownloads
+
+Declare Sub MENUWriteConfigFile
+Declare Sub MENUReadConfigFile
+
+Declare Sub MENUDisplaySelectedInfo
+Declare Sub MENUSwitchDisplaySelInfoMENU
+Declare Sub MENUSwitchDisplaySelInfoRBN
+
+Dim	mbInfoSelChangedHandlerEnabled As Logical,
+	msLastSelectionTable As String,
+	mnbtnSelInfoHandlerIdx, mnmnuSelInfoHandlerIdx, mnstpbtnSelInfoHandler As Integer,
+	msLanguage As String
+
+'**********************************************************************************************''
+'**   Created by Peter Horsbøll Møller, Pitney Bowes Software
+'
+'**********************************************************************************************''
+Sub Main
+
+Dim	sTabName, sGroupName As String,
+	nCtrl, nCtrlIdx As Integer
+
+OnError GoTo ErrorOccured
+
+	'***Initializing ApplicationInfo
+	Call PRGISetApplicationName(xProgram)
+	Call PRGISetApplicationVersion(xVersion)
+	Call PRGISetApplicationCopyrightYear(xYear)
+	Call PRGISetApplicationImageUri(ICON_INFOSELHANDLER_32)
+
+	'***Enabling Debug if file exists
+	Call DEBUGEnableByFile(FILE_DBG)
+
+	Call MENUReadConfigFile
+
+	Call RESSTRNGSetStringFilesFolder("Strings")
+	Call PRGILoadLanguageStrings(msLanguage)
+
+	Call PRGISetApplicationDevelopedBy("Rémi Bizet and Peter Horsbøll Møller")
+	Call PRGISetDescription(RESSTRNGGetString(STR_DESCRIPTION)) '"This application shows the attributes of the selected record in the Info Window as soon as you select a record. It only works when a single record is selected."
+
+	If FileExists(FILE_HLP & " " & msLanguage & ".PDF") Then
+		Call PRGISetApplicationHelpFile(FILE_HLP & " " & msLanguage & ".PDF")
+	Else
+		Call PRGISetApplicationHelpFile(FILE_HLP & ".PDF")
+	End If
+
+	If NOT SystemInfo(SYS_INFO_MAPINFO_INTERFACE) = MIINTERFACE_RIBBON Then
+		Create Menu xProgramMenu As
+			RESSTRNGGetString(STR_MNU_ENABLE_DISABLE_INFO_SEL) 			'"!Disable Info on Selection^Enable Info on Selection"
+				HelpMsg RESSTRNGGetString(STR_HLP_ENABLE_DISABLE_INFO_SEL)	'"Enable/Disable Info Window showing attributes of the selected record."
+				Calling MENUSwitchDisplaySelInfoMENU,
+			"(-",
+			RESSTRNGGetString(STR_MNU_RATE_APPLICATION) 					'"Rate the application at Community Downloads"
+				Calling MENUGoToCommunityDownloads,
+			RESSTRNGGetString(STR_MNU_END_APPLICATION)					'"End program"
+				Calling EndProgram,
+			RESSTRNGGetString(STR_MNU_ABOUT_APPLICATION)					'"About..."
+				Calling PRGIAboutbox
+
+		Alter Menu ID 4
+			Add "(-", xProgramMenu  As xProgramMenu
+
+		Alter ButtonPad ID 1 Add
+			ToggleButton calling MENUSwitchDisplaySelInfoMENU
+			HelpMsg RESSTRNGGetString(STR_HLP_ENABLE_DISABLE_INFO_SEL) & "\n" & RESSTRNGGetString(STR_BTN_ENABLE_DISABLE_INFO_SEL)	'"Shows the attributes of the selected record in the Info Window as soon as you select a record.\nShow Info on Selection"
+			Icon MI_ICON_MAPSYMB_10
+	Else
+		sTabName		= TAB_MAP
+		sGroupName	= TAB_GROUP_MAP_ANALYZE
+
+		'**Adding to the Ribbon, MAP Tab
+		mnbtnSelInfoHandlerIdx	= RBNGroupInsertButtonAfter("btnSelInfoHandler", RESSTRNGGetString(STR_BTN_SHOW_INFO), "", sTabName, sGroupName, "InfoToolButton")
+		If mnbtnSelInfoHandlerIdx > 0 Then
+			'Specify that this is a toggle button
+			Call RBNControlToggleIdx(mnbtnSelInfoHandlerIdx, TRUE)
+			'Create & Set the button tooltip
+			Call RBNControlSetToolTipIdx(mnbtnSelInfoHandlerIdx, PRGIGetApplicationName(), RESSTRNGGetString(STR_TTIP_ENABLE_INFO_SEL), "")
+			'Set the button icon
+			Call RBNControlSetIconsIdx(mnbtnSelInfoHandlerIdx, CONTROL_SIZE_LARGE, "", ICON_INFOSELHANDLER_32)
+			'**Set the handler to match the handler of the first button
+			Call RBNControlSetCustomMBXHandlerIdx(mnbtnSelInfoHandlerIdx, "MENUSwitchDisplaySelInfoRBN")
+		End If
+
+		'**Adding to the Application Context Menu
+		mnmnuSelInfoHandlerIdx	= RBNToolContextMenuAddMenuItem("mnuSelInfoHandler", RESSTRNGGetString(STR_MNU_SHOW_INFO_SEL), "")
+		If mnmnuSelInfoHandlerIdx > 0 Then
+			'Specify that this is a toggle button
+			Call RBNControlToggleIdx(mnmnuSelInfoHandlerIdx, TRUE)
+			'Create & Set the button tooltip
+			Call RBNControlSetToolTipIdx(mnmnuSelInfoHandlerIdx, PRGIGetApplicationName(), RESSTRNGGetString(STR_TTIP_ENABLE_INFO_SEL), "")
+			'Set the button icon
+			Call RBNControlSetIconsIdx(mnmnuSelInfoHandlerIdx, CONTROL_SIZE_LARGE, "", ICON_INFOSELHANDLER_16)
+			'**Set the handler to match the handler of the first button
+			Call RBNControlSetCustomMBXHandlerIdx(mnmnuSelInfoHandlerIdx, "MENUSwitchDisplaySelInfoRBN")
+		End If
+
+		nCtrlIdx	= RBNToolContextMenuAddMenuItem("rateApplication", STRINGReplace(RESSTRNGGetString(STR_MNU_RATE_APPLICATION), "&", ""), "")
+		If nCtrlIdx > 0 Then
+			'Create & Set the button tooltip
+			Call RBNControlSetToolTipIdx(nCtrlIdx, PRGIGetApplicationName(), STRINGReplace(STRINGReplace(RESSTRNGGetString(STR_MNU_RATE_APPLICATION), "&", ""), "...", ""), "")
+			'Set the button icon
+			Call RBNControlSetIconsIdx(nCtrlIdx, CONTROL_SIZE_SMALL, PATH_IMAGES & "CommunityDownloads_16.png", "")
+			Call RBNControlSetLeftMarginIdx(nCtrlIdx, 0)
+			'Set Custom MapBasic Handle to the button
+			Call RBNControlSetCustomMBXHandlerIdx(nCtrlIdx, "MENUGoToCommunityDownloads")
+		End If
+
+		'**Adding to the Map MiniToolbar
+		nCtrl = RBNMapMTBInsertStackPanelAfter("stpSelInfoHandler", "Info", "MapTools2")
+		If nCtrl > 0 Then
+			Call RBNControlSetLeftMarginIdx(nCtrl, 0)
+
+			nCtrl	= RBNMapMTBStackPanelAddControl("stptbtInfoTool", "", "", ControlType_ToolButton, "stpSelInfoHandler")
+			If nCtrl > 0 Then
+				'Create & Set the button tooltip
+				Call RBNControlSetToolTipIdx(nCtrl, RESSTRNGGetString(STR_TTIT_INFO_TOOL), RESSTRNGGetString(STR_TTIP_INFO_TOOL), "")
+				'Set the button icon
+				Call RBNControlSetIconsIdx(nCtrl, CONTROL_SIZE_SMALL, "", MI_IMG_MAP_INFOTOOL_16)
+				'**Set the handler to match the handler of the first button
+				Call RBNControlSetCmdIDIdx(nCtrl, 1707)
+			End If
+
+			mnstpbtnSelInfoHandler	= RBNMapMTBStackPanelAddControl("stpbtnSelInfoHandler", "", "", ControlType_Button, "stpSelInfoHandler")
+			If mnstpbtnSelInfoHandler > 0 Then
+				'Specify that this is a toggle button
+				Call RBNControlToggleIdx(mnstpbtnSelInfoHandler, TRUE)
+				'Create & Set the button tooltip
+				Call RBNControlSetToolTipIdx(mnstpbtnSelInfoHandler, PRGIGetApplicationName(), RESSTRNGGetString(STR_TTIP_ENABLE_INFO_SEL), "")
+				'Set the button icon
+				Call RBNControlSetIconsIdx(mnstpbtnSelInfoHandler, CONTROL_SIZE_SMALL, "", ICON_INFOSELHANDLER_16)
+				'**Set the handler to match the handler of the first button
+				Call RBNControlSetCustomMBXHandlerIdx(mnstpbtnSelInfoHandler, "MENUSwitchDisplaySelInfoRBN")
+			End If
+		End If
+	End If
+
+	mbInfoSelChangedHandlerEnabled = FALSE
+	Call MENUSwitchDisplaySelInfoMENU
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "Main")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'**   Created by Peter Horsbøll Møller, Pitney Bowes Software
+'**   Ending MapBasic application
+'**********************************************************************************************''
+Sub EndProgram
+
+OnError GoTo ErrorOccured
+
+	End Program
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "EndProgram")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'
+'**********************************************************************************************''
+Sub EndHandler
+
+OnError GoTo ErrorOccured
+
+	Call MENUWriteConfigFile
+	Call RBNEndHandler
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "EndHandler")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'
+'**********************************************************************************************''
+Sub MENUGoToCommunityDownloads
+
+OnError GoTo ErrorOccured
+
+	Call FILELaunch("http://communitydownloads.pbinsight.com")
+'	Call FILELaunch("http://communitydownloads.pbinsight.com/code-exchange/download/mapinfo2excel")
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "MENUGoToCommunityDownloads")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'
+'**********************************************************************************************''
+Sub MENUWriteConfigFile
+
+Dim	sFile As String
+
+OnError GoTo ErrorOccured
+
+	sFile = GetFolderPath$(FOLDER_MI_PREFERENCE) & FILE_INI
+	Call CONFIGWriteKey(sFile, "SETTINGS", "LANGUAGE", PRGIGetApplicationLanguageName())
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "MENUWriteConfigFile")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'
+'**********************************************************************************************''
+Sub MENUReadConfigFile
+
+Dim	sFile As String
+
+OnError GoTo ErrorOccured
+
+	sFile = GetFolderPath$(FOLDER_MI_PREFERENCE) & FILE_INI
+
+	If FileExists(sFile) Then
+		msLanguage	= CONFIGReadKey(sFile, "SETTINGS", "LANGUAGE")
+		Call DEBUGPrint("Found '" & msLanguage & "' in " & sFile)
+	Else
+		sFile 		= ApplicationDirectory$() & FILE_INI
+		msLanguage	= CONFIGReadKey(sFile, "SETTINGS", "LANGUAGE")
+		Call DEBUGPrint("Found '" & msLanguage & "' in " & sFile)
+	End If
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "MENUReadConfigFile")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'
+'**********************************************************************************************''
+Sub SelChangedHandler
+
+OnError GoTo ErrorOccured
+
+	Call MENUDisplaySelectedInfo
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "SelChangedHandler")
+	Call ERRShow()
+
+End Sub
+
+'****************************************
+'**   Created by Rémi Bizet, Pitney Bowes Software, France
+'**	 Modified by Peter Horsbøll Møller, Pitney Bowes Software
+'****************************************
+Sub MENUDisplaySelectedInfo
+
+Dim	nRowID As Integer
+
+OnError GoTo ErrorOccured
+
+ 	If mbInfoSelChangedHandlerEnabled Then
+' 		Call DEBUGPrint("MENUDisplaySelectedInfo: Action")
+
+ 		Set Handler SelChangedHandler Off
+
+		Do Case CommandInfo(CMD_INFO_SELTYPE)
+			Case 1	'one row was added to the selection;
+				nRowID	= CommandInfo(CMD_INFO_ROWID)
+				Set Window WIN_INFO
+					Table SelectionInfo(SEL_INFO_TABLENAME) Rec nRowID
+			Case 2	'one row was removed from the selection;
+				nRowID	= CommandInfo(CMD_INFO_ROWID)
+				Set Window WIN_INFO
+					Table msLastSelectionTable Rec nRowID
+		End Case
+
+ 		Set Handler SelChangedHandler On
+'	Else
+ '		Call DEBUGPrint("MENUDisplaySelectedInfo: No Action")
+
+		msLastSelectionTable =  SelectionInfo(SEL_INFO_TABLENAME)
+ 	End If
+
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "SelChangedHandler")
+	Call ERRShow()
+	Resume Next
+
+End Sub
+
+'****************************************
+'**   Created by Rémi Bizet, Pitney Bowes Software, France
+'**
+'****************************************
+Sub MENUSwitchDisplaySelInfoMENU
+
+OnError GoTo ErrorOccured
+
+'	Call DEBUGPrint("MENUSwitchDisplaySelInfoMENU")
+	mbInfoSelChangedHandlerEnabled = (NOT mbInfoSelChangedHandlerEnabled)
+	If mbInfoSelChangedHandlerEnabled Then
+		Alter Button MENUSwitchDisplaySelInfoMENU Check
+		Alter Menu Item MENUSwitchDisplaySelInfoMENU Check
+	Else
+		Alter Button MENUSwitchDisplaySelInfoMENU UnCheck
+		Alter menu Item MENUSwitchDisplaySelInfoMENU UnCheck
+	End If
+
+	If SystemInfo(SYS_INFO_MAPINFO_INTERFACE) = MIINTERFACE_RIBBON Then
+'		Call DEBUGPrint("RBNControlToggleIdx(" & mnbtnSelInfoHandlerIdx & ", " & mbInfoSelChangedHandlerEnabled & ")")
+
+		Call RBNControlSelectedIdx(mnbtnSelInfoHandlerIdx, mbInfoSelChangedHandlerEnabled)
+		Call RBNControlSelectedIdx(mnmnuSelInfoHandlerIdx, mbInfoSelChangedHandlerEnabled)
+		Call RBNControlSelectedIdx(mnstpbtnSelInfoHandler, mbInfoSelChangedHandlerEnabled)
+
+		If mbInfoSelChangedHandlerEnabled Then
+			Call RBNControlSetToolTipIdx(mnbtnSelInfoHandlerIdx, PRGIGetApplicationName(), RESSTRNGGetString(STR_TTIP_DISABLE_INFO_SEL), "")
+			Call RBNControlSetToolTipIdx(mnmnuSelInfoHandlerIdx, PRGIGetApplicationName(), RESSTRNGGetString(STR_TTIP_DISABLE_INFO_SEL), "")
+			Call RBNControlSetToolTipIdx(mnstpbtnSelInfoHandler, PRGIGetApplicationName(), RESSTRNGGetString(STR_TTIP_DISABLE_INFO_SEL), "")
+		Else
+			Call RBNControlSetToolTipIdx(mnbtnSelInfoHandlerIdx, PRGIGetApplicationName(), RESSTRNGGetString(STR_TTIP_ENABLE_INFO_SEL), "")
+			Call RBNControlSetToolTipIdx(mnmnuSelInfoHandlerIdx, PRGIGetApplicationName(), RESSTRNGGetString(STR_TTIP_ENABLE_INFO_SEL), "")
+			Call RBNControlSetToolTipIdx(mnstpbtnSelInfoHandler, PRGIGetApplicationName(), RESSTRNGGetString(STR_TTIP_ENABLE_INFO_SEL), "")
+		End If
+	End If
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "MENUSwitchDisplaySelInfoMENU")
+	Call ERRShow()
+
+End Sub
+
+'****************************************
+'**   Created by Rémi Bizet, Pitney Bowes Software, France
+'**
+'****************************************
+Sub MENUSwitchDisplaySelInfoRBN
+
+OnError GoTo ErrorOccured
+
+	Call MENUSwitchDisplaySelInfoMENU
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "MENUSwitchDisplaySelInfoRBN")
+	Call ERRShow()
+
+End Sub

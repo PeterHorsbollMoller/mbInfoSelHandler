@@ -1,0 +1,18 @@
+[ADMIN]
+LANGUAGE=Dansk
+
+[STRINGS]
+1="Afslut program"
+2="Om..."
+3="&Bedøm applikationen på Community Downloads"
+4="Vis Info ved udvælgelse"
+5="!Deaktiver Info ved udvælgelse^Aktiver Info ved udvælgelse"
+6="Aktiver/Deaktiver visning af attributter i Info-vinduet ved udvælgelse."
+7="Vis Info ved udvælgelse"
+
+8="Vis Info"
+9="Tryk for at aktivere visning af info ved udvælgelse"
+10="Tryk for at deaktivere visning af info ved udvælgelse"
+11="Info-værjtøj"
+12="Vis tabulære informationer om objekter i kortet"
+13="Denne applikation viser attributter om den senest til- eller fravalgte post i Info-vinduet så snart du har til- eller fravalgt en post."

@@ -1,0 +1,18 @@
+[ADMIN]
+LANGUAGE=Français
+
+[STRINGS]
+1="&Quitter"
+2="&À propos de..."
+3="&Voter pour cette application sur Community Downloads"
+4="Fiche Info Sélection"
+5="!Désactiver la fiche &Info Selection^Activer la fiche &Info Selection"
+6="Activer/Désactiver La Fenêtre ''Infos'' sur les données d'1 enregistrement lors de sa (dé)selection."
+7="Fiche Info Sélection"
+
+8="Fiche Info"
+9="Cliquer pour Activer la Fiche Info sur Sélection"
+10="Cliquer pour Désactiver la Fiche Info sur Sélection"
+11="Outil Info"
+12="Affiche les informations attributaires associées aux objets Cartographiques"
+13="Cette application affiche dans la Fenêtre ''Infos'' les données attributaires d'un enregistrement, dès que vous le sélectionnez ou désélectionnez. Fonctionne  pour un seul élément (dé)Sélectionné à la fois."
