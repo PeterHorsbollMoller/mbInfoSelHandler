@@ -18,7 +18,7 @@ Include "Library\RibbonElements.def"
 
 Define xProgram 		"InfoSelHandler"
 Define xProgramMenu		"InfoSelHandler"
-Define xVersion 		"2.0.2"
+Define xVersion 		"3.0.2"
 Define xYear			"2015"
 Define xAddToMenuBar	FALSE
 
