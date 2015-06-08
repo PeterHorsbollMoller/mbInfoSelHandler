@@ -18,7 +18,7 @@ Include "Library\RibbonElements.def"
 
 Define xProgram 		"InfoSelHandler"
 Define xProgramMenu		"InfoSelHandler"
-Define xVersion 		"3.0.2"
+Define xVersion 		"3.0.3"
 Define xYear			"2015"
 Define xAddToMenuBar	FALSE
 
@@ -189,7 +189,6 @@ OnError GoTo ErrorOccured
 		End If
 	End If
 
-	mbInfoSelChangedHandlerEnabled = FALSE
 	Call MENUSwitchDisplaySelInfoMENU
 
 	Exit Sub
@@ -268,6 +267,7 @@ OnError GoTo ErrorOccured
 
 	sFile = GetFolderPath$(FOLDER_MI_PREFERENCE) & FILE_INI
 	Call CONFIGWriteKey(sFile, "SETTINGS", "LANGUAGE", PRGIGetApplicationLanguageName())
+	Call CONFIGWriteKey(sFile, "SETTINGS", "INITIALSTATEISON", Int(mbInfoSelChangedHandlerEnabled))
 
 	Exit Sub
 '-------------------------
@@ -284,7 +284,7 @@ End Sub
 '**********************************************************************************************''
 Sub MENUReadConfigFile
 
-Dim	sFile As String
+Dim	sFile, sValue As String
 
 OnError GoTo ErrorOccured
 
@@ -292,11 +292,29 @@ OnError GoTo ErrorOccured
 
 	If FileExists(sFile) Then
 		msLanguage	= CONFIGReadKey(sFile, "SETTINGS", "LANGUAGE")
-		Call DEBUGPrint("Found '" & msLanguage & "' in " & sFile)
+'		Call DEBUGPrint("Found '" & msLanguage & "' in " & sFile)
+
+		sValue		= CONFIGReadKey(sFile, "SETTINGS", "INITIALSTATEISON")
 	Else
 		sFile 		= ApplicationDirectory$() & FILE_INI
 		msLanguage	= CONFIGReadKey(sFile, "SETTINGS", "LANGUAGE")
-		Call DEBUGPrint("Found '" & msLanguage & "' in " & sFile)
+'		Call DEBUGPrint("Found '" & msLanguage & "' in " & sFile)
+
+		sValue		= CONFIGReadKey(sFile, "SETTINGS", "INITIALSTATEISON")
+	End If
+
+	If sValue = "" Then
+		sFile 		= ApplicationDirectory$() & FILE_INI
+		sValue		= CONFIGReadKey(sFile, "SETTINGS", "INITIALSTATEISON")
+	End If
+	If sValue = "1" Then
+		'**The value get's switched by the first call to MENUSwitchDisplaySelInfoMENU
+		'**So it must be set to the opposite of what it should be initially
+		mbInfoSelChangedHandlerEnabled = FALSE
+	Else
+		'**The value get's switched by the first call to MENUSwitchDisplaySelInfoMENU
+		'**So it must be set to the opposite of what it should be initially
+		mbInfoSelChangedHandlerEnabled = TRUE
 	End If
 
 	Exit Sub
