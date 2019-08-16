@@ -30,3 +30,6 @@
 13:03:13    RBNTabGetGroupIndexThs: Number of Tab Groups 6
 15:16:14    RBNTabGetGroupIndexThs: Looking for MapAnalyze rbnTab = 121
 15:16:14    RBNTabGetGroupIndexThs: Number of Tab Groups 6
+15:04:21 3 Removing control rateApplication of type 6
+15:04:21 2 Removing control mnuSelInfoHandler of type 6
+15:04:21 1 Removing control btnSelInfoHandler of type 1

@@ -19,13 +19,13 @@ Include "Library\RibbonElements.def"
 
 Define xProgram 		"InfoSelHandler"
 Define xProgramMenu		"InfoSelHandler"
-Define xVersion 		"3.1"
-Define xYear			"2016"
+Define xVersion 		"3.3"
+Define xYear			"2019"
 Define xAddToMenuBar	FALSE
 
 Define FILE_INI				xProgram & ".ini"
 Define FILE_DBG				ApplicationDirectory$() & xProgram & ".dbg"
-Define FILE_HLP				ApplicationDirectory$() & "Documentation\" & xProgram 	'& ".pdf"
+Define FILE_HLP				ApplicationDirectory$() & "Documentation\" & xProgram 	'& ".pdf", will be added depending on the language used
 Define PATH_IMAGES				ApplicationDirectory$() & "Images\"
 
 Define ICON_INFOSELHANDLER_32 	PATH_IMAGES & "InfoSelHandler_32x32.png"
@@ -45,6 +45,7 @@ Include "Library\TABLELib.def"
 '-----------------------------------------------------------------------------------------
 Include "LanguageStrings.def"
 
+'Include "SelInfoHandler.def"
 '-----------------------------------------------------------------------------------------
 Declare Sub Main
 Declare Sub EndProgram
@@ -91,7 +92,7 @@ OnError GoTo ErrorOccured
 
 	Call MENUReadConfigFile
 
-	Call RESSTRNGSetStringFilesFolder("Strings")
+	Call RESSTRNGSetStringFilesFolder(ApplicationDirectory$() & "Strings\")
 	Call PRGILoadLanguageStrings(msLanguage)
 
 	Call PRGISetApplicationDevelopedBy("Rémi Bizet and Peter Horsbøll Møller")
@@ -126,10 +127,10 @@ OnError GoTo ErrorOccured
 			Icon MI_ICON_MAPSYMB_10
 	Else
 		sTabName		= TAB_MAP
-		sGroupName	= TAB_GROUP_MAP_ANALYZE
+		sGroupName	= TAB_GROUP_MAP_OPTIONS
 
 		'**Adding to the Ribbon, MAP Tab
-		mnbtnSelInfoHandlerIdx	= RBNGroupInsertButtonAfter("btnSelInfoHandler", RESSTRNGGetString(STR_BTN_SHOW_INFO), "", sTabName, sGroupName, "InfoToolButton")
+		mnbtnSelInfoHandlerIdx	= RBNGroupAddButton("btnSelInfoHandler", RESSTRNGGetString(STR_BTN_SHOW_INFO), "", sTabName, sGroupName)
 		If mnbtnSelInfoHandlerIdx > 0 Then
 			'Specify that this is a toggle button
 			Call RBNControlToggleIdx(mnbtnSelInfoHandlerIdx, TRUE)
@@ -165,31 +166,33 @@ OnError GoTo ErrorOccured
 			Call RBNControlSetCustomMBXHandlerIdx(nCtrlIdx, "MENUGoToCommunityDownloads")
 		End If
 
-		'**Adding to the Map MiniToolbar
-		nCtrl = RBNMapMTBInsertStackPanelAfter("stpSelInfoHandler", "Info", "MapTools2")
-		If nCtrl > 0 Then
-			Call RBNControlSetLeftMarginIdx(nCtrl, 0)
-
-			nCtrl	= RBNMapMTBStackPanelAddControl("stptbtInfoTool", "", "", ControlType_ToolButton, "stpSelInfoHandler")
+		If SystemInfo(SYS_INFO_MIVERSION) < 1700 Then
+			'**Adding to the Map MiniToolbar
+			nCtrl = RBNMapMTBInsertStackPanelAfter("stpSelInfoHandler", "Info", "MapTools2")
 			If nCtrl > 0 Then
-				'Create & Set the button tooltip
-				Call RBNControlSetToolTipIdx(nCtrl, RESSTRNGGetString(STR_TTIT_INFO_TOOL), RESSTRNGGetString(STR_TTIP_INFO_TOOL), "")
-				'Set the button icon
-				Call RBNControlSetIconsIdx(nCtrl, CONTROL_SIZE_SMALL, "", MI_IMG_MAP_INFOTOOL_16)
-				'**Set the handler to match the handler of the first button
-				Call RBNControlSetCmdIDIdx(nCtrl, 1707)
-			End If
+				Call RBNControlSetLeftMarginIdx(nCtrl, 0)
 
-			mnstpbtnSelInfoHandler	= RBNMapMTBStackPanelAddControl("stpbtnSelInfoHandler", "", "", ControlType_Button, "stpSelInfoHandler")
-			If mnstpbtnSelInfoHandler > 0 Then
-				'Specify that this is a toggle button
-				Call RBNControlToggleIdx(mnstpbtnSelInfoHandler, TRUE)
-				'Create & Set the button tooltip
-				Call RBNControlSetToolTipIdx(mnstpbtnSelInfoHandler, PRGIGetApplicationName(), RESSTRNGGetString(STR_TTIP_ENABLE_INFO_SEL), "")
-				'Set the button icon
-				Call RBNControlSetIconsIdx(mnstpbtnSelInfoHandler, CONTROL_SIZE_SMALL, "", ICON_INFOSELHANDLER_16)
-				'**Set the handler to match the handler of the first button
-				Call RBNControlSetCustomMBXHandlerIdx(mnstpbtnSelInfoHandler, "MENUSwitchDisplaySelInfoRBN")
+				nCtrl	= RBNMapMTBStackPanelAddControl("stptbtInfoTool", "", "", ControlType_ToolButton, "stpSelInfoHandler")
+				If nCtrl > 0 Then
+					'Create & Set the button tooltip
+					Call RBNControlSetToolTipIdx(nCtrl, RESSTRNGGetString(STR_TTIT_INFO_TOOL), RESSTRNGGetString(STR_TTIP_INFO_TOOL), "")
+					'Set the button icon
+					Call RBNControlSetIconsIdx(nCtrl, CONTROL_SIZE_SMALL, "", MI_IMG_MAP_INFOTOOL_16)
+					'**Set the handler to match the handler of the first button
+					Call RBNControlSetCmdIDIdx(nCtrl, 1707)
+				End If
+
+				mnstpbtnSelInfoHandler	= RBNMapMTBStackPanelAddControl("stpbtnSelInfoHandler", "", "", ControlType_Button, "stpSelInfoHandler")
+				If mnstpbtnSelInfoHandler > 0 Then
+					'Specify that this is a toggle button
+					Call RBNControlToggleIdx(mnstpbtnSelInfoHandler, TRUE)
+					'Create & Set the button tooltip
+					Call RBNControlSetToolTipIdx(mnstpbtnSelInfoHandler, PRGIGetApplicationName(), RESSTRNGGetString(STR_TTIP_ENABLE_INFO_SEL), "")
+					'Set the button icon
+					Call RBNControlSetIconsIdx(mnstpbtnSelInfoHandler, CONTROL_SIZE_SMALL, "", ICON_INFOSELHANDLER_16)
+					'**Set the handler to match the handler of the first button
+					Call RBNControlSetCustomMBXHandlerIdx(mnstpbtnSelInfoHandler, "MENUSwitchDisplaySelInfoRBN")
+				End If
 			End If
 		End If
 
@@ -417,7 +420,9 @@ OnError GoTo ErrorOccured
 '-------------------------
 ErrorOccured:
 	Call ERRCreate(Err(), Error$(), "SelChangedHandler")
-	Call ERRShow()
+	If NOT ERRGetLatestErrorNo() IN (689) Then
+		Call ERRShow()
+	End If
 	Resume Next
 
 End Sub
@@ -445,16 +450,21 @@ OnError GoTo ErrorOccured
 
 		Call RBNControlSelectedIdx(mnbtnSelInfoHandlerIdx, mbInfoSelChangedHandlerEnabled)
 		Call RBNControlSelectedIdx(mnmnuSelInfoHandlerIdx, mbInfoSelChangedHandlerEnabled)
-		Call RBNControlSelectedIdx(mnstpbtnSelInfoHandler, mbInfoSelChangedHandlerEnabled)
-
+		If SystemInfo(SYS_INFO_MIVERSION) < 1700 Then
+			Call RBNControlSelectedIdx(mnstpbtnSelInfoHandler, mbInfoSelChangedHandlerEnabled)
+		End If
 		If mbInfoSelChangedHandlerEnabled Then
 			Call RBNControlSetToolTipIdx(mnbtnSelInfoHandlerIdx, PRGIGetApplicationName(), RESSTRNGGetString(STR_TTIP_DISABLE_INFO_SEL), "")
 			Call RBNControlSetToolTipIdx(mnmnuSelInfoHandlerIdx, PRGIGetApplicationName(), RESSTRNGGetString(STR_TTIP_DISABLE_INFO_SEL), "")
-			Call RBNControlSetToolTipIdx(mnstpbtnSelInfoHandler, PRGIGetApplicationName(), RESSTRNGGetString(STR_TTIP_DISABLE_INFO_SEL), "")
+			If SystemInfo(SYS_INFO_MIVERSION) < 1700 Then
+				Call RBNControlSetToolTipIdx(mnstpbtnSelInfoHandler, PRGIGetApplicationName(), RESSTRNGGetString(STR_TTIP_DISABLE_INFO_SEL), "")
+			End If
 		Else
 			Call RBNControlSetToolTipIdx(mnbtnSelInfoHandlerIdx, PRGIGetApplicationName(), RESSTRNGGetString(STR_TTIP_ENABLE_INFO_SEL), "")
 			Call RBNControlSetToolTipIdx(mnmnuSelInfoHandlerIdx, PRGIGetApplicationName(), RESSTRNGGetString(STR_TTIP_ENABLE_INFO_SEL), "")
-			Call RBNControlSetToolTipIdx(mnstpbtnSelInfoHandler, PRGIGetApplicationName(), RESSTRNGGetString(STR_TTIP_ENABLE_INFO_SEL), "")
+			If SystemInfo(SYS_INFO_MIVERSION) < 1700 Then
+				Call RBNControlSetToolTipIdx(mnstpbtnSelInfoHandler, PRGIGetApplicationName(), RESSTRNGGetString(STR_TTIP_ENABLE_INFO_SEL), "")
+			End If
 		End If
 	End If
 
@@ -496,9 +506,9 @@ Dim	sTableName As String
 OnError GoTo ErrorOccured
 
 	sTableName	= GetTableEventArgsTableAlias(args)
-	Call DEBUGPrint("Table Closed: " & sTableName)
-	If sTabName = msLastSelectionTable Then
-		Call DEBUGPrint("   Last Selection Table has been reset!")
+'	Call DEBUGPrint("Table Closed: " & sTableName)
+	If sTableName = msLastSelectionTable Then
+'		Call DEBUGPrint("   Last Selection Table has been reset!")
 		msLastSelectionTable = ""
 	End If
 

@@ -1,25 +1,25 @@
 [Open Files]
-Active File Display Mode=1
-Active File Index=0
-Open File Line0=0
+Active File Display Mode=3
+Active File Index=3
+Open File Line0=3884
 Open File Line1=0
-Open File Line2=56861
-Open File Line3=0
-Open File Pos0=0
-Open File Pos1=23
-Open File Pos2=58870
-Open File Pos3=70
-Open File Window Pos0=0,1,-1,-1,-1,-1,3,26,1408,764
-Open File Window Pos1=0,1,-1,-1,-1,-1,3,26,1408,764
-Open File Window Pos2=0,1,-1,-1,-1,-1,3,26,1408,764
-Open File Window Pos3=0,1,-1,-1,-1,-1,3,26,1408,764
+Open File Line2=8978
+Open File Line3=44593
+Open File Pos0=4935
+Open File Pos1=162
+Open File Pos2=11512
+Open File Pos3=45909
+Open File Window Pos0=0,1,-1,-1,-8,-30,3,26,1721,893
+Open File Window Pos1=0,1,-1,-1,-8,-30,3,26,1721,893
+Open File Window Pos2=0,1,-1,-1,-8,-30,125,125,1006,629
+Open File Window Pos3=2,3,-1,-1,-8,-30,150,150,1031,654
 Open File0=D:\Dropbox (Horsboll-Moller)\3. MB_Kode\mbInfoSelHandler\mbcode\MENUInfoSelHandler.mb
 Open File1=D:\Dropbox (Horsboll-Moller)\3. MB_Kode\mbInfoSelHandler\mbcode\InfoSelHandler.mbp
-Open File2=D:\Dropbox (Horsboll-Moller)\3. MB_Kode\mbLibrary\MapBasic\MAPBASIC.DEF
-Open File3=D:\Dropbox (Horsboll-Moller)\3. MB_Kode\mbInfoSelHandler\InfoSelHandler.ini
+Open File2=D:\Dropbox (Horsboll-Moller)\3. MB_Kode\mbInfoSelHandler\mbcode\Library\MI_ICONS_X64.def
+Open File3=D:\Dropbox (Horsboll-Moller)\3. MB_Kode\mbInfoSelHandler\mbcode\Library\RIBBONLib.def
 Open File4=
 Remember Files=1
 
 [Project Information]
-	Project Start=DF07040002001C000E0031000900000050
-	Working Time=194698
+	Project Start=E0070C0004001600090007000800000025
+	Working Time=1028761
