@@ -1,0 +1,18 @@
+[ADMIN]
+LANGUAGE=Deutsch
+
+[STRINGS]
+1="Programm beenden"
+2="Über ..."
+3="Bewerten Sie die Anwendung unter Community Downloads"
+4="Info zur Auswahl anzeigen"
+5="!Informationen zur Auswahl deaktivieren^Info zur Auswahl aktivieren"
+6="Info-Fenster aktivieren / deaktivieren, in dem die Attribute des zuletzt (ab-) ausgewählten Datensatzes angezeigt werden."
+7="Info zur Auswahl anzeigen"
+
+8="Info anzeigen"
+9="Klick, um Info zur Auswahl zu aktivieren"
+10="Klick, um Info zur Auswahl zu deaktivieren"
+11="Info-Tool"
+12="Tabellarische Anzeige der Informationen zu Kartenobjekten"
+13="Diese Anwendung zeigt die Attribute des zuletzt (ab-) ausgewählten Datensatzes im Infofenster an, sobald Sie einen Datensatz (ab-) auswählen."

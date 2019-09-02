@@ -1,28 +1,11 @@
-15:04:32 MENUDisplaySelectedInfo: Action
-15:04:32    One row was added to the selection
-15:04:37 MENUDisplaySelectedInfo: Action
-15:04:37    One row was removed from the selection
-15:04:37    Showing Rec 90 From table Kommuner_Indbyggere
-15:04:37 MENUDisplaySelectedInfo: Action
-15:04:37    One row was added to the selection
-15:04:43 MENUDisplaySelectedInfo: Action
-15:04:43    One row was removed from the selection
-15:04:43    Showing Rec 65 From table Kommuner_Indbyggere
-15:04:57 MENUDisplaySelectedInfo: Action
-15:04:57    One row was added to the selection
-15:05:00 MENUDisplaySelectedInfo: Action
-15:05:00    One row was removed from the selection
-15:05:00    Showing Rec 66 From table Kommuner_Indbyggere
-15:28:08 3 Removing control rateApplication of type 6
-15:28:08 2 Removing control mnuSelInfoHandler of type 6
-15:28:08 1 Removing control btnSelInfoHandler of type 1
-15:28:16 Tab 0 is named TabHome but shown as 
-15:28:16 Tab 1 is named TabTable but shown as 
-15:28:16 Tab 2 is named TabMap but shown as 
-15:53:48 MENUDisplaySelectedInfo: Action
-15:53:48    One row was added to the selection
-15:54:08 MENUDisplaySelectedInfo: Action
-15:54:08    One row was removed from the selection
-15:54:08    Showing Rec 90 From table Kommuner_Indbyggere
-15:54:08 MENUDisplaySelectedInfo: Action
-15:54:08    One row was added to the selection
+15:05:15 MENUDisplaySelectedInfo: Action
+15:05:41 MENUDisplaySelectedInfo: Action
+15:05:42 MENUDisplaySelectedInfo: Action
+15:05:42    One row was added to the selection
+15:05:46 MENUDisplaySelectedInfo: Action
+15:05:46    One row was removed from the selection
+15:05:46    Showing Rec 64 From table Kommuner_Indbyggere
+15:05:46 MENUDisplaySelectedInfo: Action
+15:05:51 MENUDisplaySelectedInfo: Action
+15:05:52 MENUDisplaySelectedInfo: Action
+15:05:52    One row was added to the selection

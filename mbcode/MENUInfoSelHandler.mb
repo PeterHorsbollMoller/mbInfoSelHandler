@@ -19,7 +19,7 @@ Include "Library\RibbonElements.def"
 
 Define xProgram 		"InfoSelHandler"
 Define xProgramMenu		"InfoSelHandler"
-Define xVersion 		"3.3"
+Define xVersion 		"3.3.1"
 Define xYear			"2019"
 Define xAddToMenuBar	FALSE
 
@@ -308,15 +308,13 @@ OnError GoTo ErrorOccured
 	sState			= CONFIGReadKey(sFile, "SETTINGS", "INITIALSTATEISON")
 	sShowOnDeselect	= CONFIGReadKey(sFile, "SETTINGS", "SHOWINFOONDESELECT")
 
-	If FileExists(sFile) Then
+	If FileExists(sFileUser) Then
 		msLanguage	= CONFIGReadKey(sFileUser, "SETTINGS", "LANGUAGE")
 '		Call DEBUGPrint("Found '" & msLanguage & "' in " & sFileUser)
-
 		sState		= CONFIGReadKey(sFileUser, "SETTINGS", "INITIALSTATEISON")
 	Else
 		msLanguage	= CONFIGReadKey(sFile, "SETTINGS", "LANGUAGE")
 '		Call DEBUGPrint("Found '" & msLanguage & "' in " & sFile)
-
 		sState		= CONFIGReadKey(sFile, "SETTINGS", "INITIALSTATEISON")
 	End If
 
