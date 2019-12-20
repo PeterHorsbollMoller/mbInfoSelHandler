@@ -1,0 +1,213 @@
+'*******************************************************************************
+'** 	Program:
+'** 	Modul:
+'**
+'*******************************************************************************
+
+'-------------------------------------
+Include "MapBasic.def"
+'**default constants...
+Include "..\Defaults.def"
+
+'-------------------------------------
+Include "..\DEBUGLib.def"
+Include "..\ERRORLib.def"
+
+Include "T_MI_POINT.def"
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes MapInfo
+'Parameters:
+'	tmipFrom:	T_MI_POINT to copy from
+'	tmipTo:	T_MI_POINT to copy to
+'**********************************************************************************************''
+Sub tmipCopy( tmipFrom As T_MI_POINT, tmipTo As T_MI_POINT)
+
+OnError GoTo ErrorOccured
+
+	tmipTo.fX	= tmipFrom.fX
+	tmipTo.fY	= tmipFrom.fY
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "tmipCopy")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Business Insight
+'Parameters:
+'
+'**********************************************************************************************''
+Sub tmipOffset(   tmip As T_MI_POINT
+			, ByVal fDistance As Float
+			, ByVal fDirection As Float
+			)
+
+OnError GoTo ErrorOccured
+
+	tmip.fX = tmip.fX + ((Cos(fDirection * DEG_2_RAD)) * fDistance)
+	tmip.fY = tmip.fY + ((Sin(fDirection * DEG_2_RAD)) * fDistance)
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "tmipOffset")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes MapInfo
+'Parameters:
+'	tmip1 & tmip2 : T_MI_POINT to compare
+'Return value:
+'	TRUE: If the two T_MI_POINTs are identical
+'	FALSE: If the two T_MI_POINTs are NOT identical
+'**********************************************************************************************''
+Function tmipAreIdentical( tmip1 As T_MI_POINT, tmip2 As T_MI_POINT) As Logical
+
+OnError GoTo ErrorOccured
+
+tmipAreIdentical = FALSE
+
+	If tmip1.fX	<> tmip2.fX Then
+		Exit Function
+	ElseIf tmip1.fY <> tmip2.fY Then
+		Exit Function
+	End If
+
+tmipAreIdentical = TRUE
+
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "tmipAreIdentical")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes MapInfo
+'Parameters:
+'	:
+'Return value: Float
+'Calculating the direction from tStart to tEnd
+'	in 360 degrees
+'	with east as the starting angle
+'	and counter clockwise
+'**********************************************************************************************''
+Function tmipDirection(tStart As T_MI_POINT, tEnd As T_MI_POINT) As Float
+
+Dim	fDirection As Float
+
+OnError GoTo ErrorOccured
+
+tmipDirection = 0
+
+	'//Checking for vertical dirction
+	If (tEnd.fX - tStart.fX) = 0 Then
+		'//not allowed to divide by zero...
+		If tEnd.fY > tStart.fY Then
+			'//tEnd is north of tStart...
+			tmipDirection	= 90	'degrees
+		Else
+			'//tEnd is south of tStart...
+			tmipDirection	= 270	'degrees
+		End If
+
+		Exit Function
+	End If
+
+	'//Checking for horisontal dirction
+	If (tEnd.fY = tStart.fY) Then
+		If (tEnd.fX < tStart.fX) Then
+			'//tEnd is west of tStart...
+			tmipDirection = 180	'degrees
+		ElseIf (tEnd.fX > tStart.fX) And (tEnd.fY = tStart.fY) Then
+			'//tEnd is east of tStart...
+			tmipDirection = 0	'degrees
+		End If
+
+		Exit Function
+	End If
+
+	fDirection = Atn((tEnd.fY - tStart.fY) / (tEnd.fX - tStart.fX)) * RAD_2_DEG	'//Converting from RAD to Degrees
+
+	If (tEnd.fX < tStart.fX) And (tEnd.fY > tStart.fY) Then
+		'//tEnd is northwest of tStart
+		fDirection = fDirection + 180	'degrees
+	ElseIf (tEnd.fX < tStart.fX) And (tEnd.fY < tStart.fY) Then
+		'//tEnd is southwest of tStart
+		fDirection = fDirection + 180	'degrees
+	End If
+
+	'//fDirection should be less than or equal to 360 degress
+	Do Until fDirection <= 360
+		fDirection = fDirection - 360	'//degrees
+	Loop
+	'//fDirection should be more than or equal to 0 degress
+	Do Until fDirection >= 0
+		fDirection = fDirection + 360	'//degrees
+	Loop
+
+	tmipDirection = fDirection
+
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "tmipDirection")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes MapInfo
+'Parameters:
+'	tmip : T_MI_POINT to use when creating the MapInfo Point
+'Return value:
+'	A point with the current symbol style
+'**********************************************************************************************''
+Function tmipToPoint( tmip As T_MI_POINT) As Object
+
+OnError GoTo ErrorOccured
+
+	tmipToPoint = tmipToPointWithStyle(tmip, CurrentSymbol())
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "tmipToPoint")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes MapInfo
+'Parameters:
+'	tmip : T_MI_POINT to use when creating the MapInfo Point
+'	symUse: Symbol style to asign to the Point
+'Return value:
+'	A point with the symbol style given
+'**********************************************************************************************''
+Function tmipToPointWithStyle( tmip As T_MI_POINT, ByVal symUse As Symbol) As Object
+
+Dim	oPnt As Object
+
+OnError GoTo ErrorOccured
+
+	oPnt = CreatePoint(tmip.fX, tmip.fY)
+	tmipToPointWithStyle = oPnt
+
+	Alter Object oPnt
+		Info OBJ_INFO_SYMBOL, symUse
+
+	tmipToPointWithStyle = oPnt
+
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "tmipToPointWithStyle")
+	Call ERRShow()
+
+End Function
+

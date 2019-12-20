@@ -19,7 +19,7 @@ Include "Library\RibbonElements.def"
 
 Define xProgram 		"InfoSelHandler"
 Define xProgramMenu		"InfoSelHandler"
-Define xVersion 		"3.3.1"
+Define xVersion 		"3.4.0"
 Define xYear			"2019"
 Define xAddToMenuBar	FALSE
 
@@ -92,7 +92,9 @@ OnError GoTo ErrorOccured
 
 	Call MENUReadConfigFile
 
+	Call RESSTRNGSetCharSet("UTF-8")
 	Call RESSTRNGSetStringFilesFolder(ApplicationDirectory$() & "Strings\")
+	Call PRGISetApplicationUseLanguageCode(TRUE)
 	Call PRGILoadLanguageStrings(msLanguage)
 
 	Call PRGISetApplicationDevelopedBy("Rémi Bizet and Peter Horsbøll Møller")
@@ -110,9 +112,9 @@ OnError GoTo ErrorOccured
 				HelpMsg RESSTRNGGetString(STR_HLP_ENABLE_DISABLE_INFO_SEL)	'"Enable/Disable Info Window showing attributes of the selected record."
 				Calling MENUSwitchDisplaySelInfoMENU,
 			"(-",
-			RESSTRNGGetString(STR_MNU_RATE_APPLICATION) 					'"Rate the application at Community Downloads"
-				Calling MENUGoToCommunityDownloads,
-			"(-",
+'			RESSTRNGGetString(STR_MNU_RATE_APPLICATION) 					'"Rate the application at Community Downloads"
+'				Calling MENUGoToCommunityDownloads,
+'			"(-",
 			RESSTRNGGetString(STR_MNU_END_APPLICATION)					'"End program"
 				Calling EndProgram,
 			RESSTRNGGetString(STR_MNU_ABOUT_APPLICATION)					'"About..."
@@ -155,16 +157,16 @@ OnError GoTo ErrorOccured
 			Call RBNControlSetCustomMBXHandlerIdx(mnmnuSelInfoHandlerIdx, "MENUSwitchDisplaySelInfoRBN")
 		End If
 
-		nCtrlIdx	= RBNToolContextMenuAddMenuItem("rateApplication", STRINGReplace(RESSTRNGGetString(STR_MNU_RATE_APPLICATION), "&", ""), "")
-		If nCtrlIdx > 0 Then
-			'Create & Set the button tooltip
-			Call RBNControlSetToolTipIdx(nCtrlIdx, PRGIGetApplicationName(), STRINGReplace(STRINGReplace(RESSTRNGGetString(STR_MNU_RATE_APPLICATION), "&", ""), "...", ""), "")
-			'Set the button icon
-			Call RBNControlSetIconsIdx(nCtrlIdx, CONTROL_SIZE_SMALL, PATH_IMAGES & "CommunityDownloads_16.png", "")
-			Call RBNControlSetLeftMarginIdx(nCtrlIdx, 0)
-			'Set Custom MapBasic Handle to the button
-			Call RBNControlSetCustomMBXHandlerIdx(nCtrlIdx, "MENUGoToCommunityDownloads")
-		End If
+'		nCtrlIdx	= RBNToolContextMenuAddMenuItem("rateApplication", STRINGReplace(RESSTRNGGetString(STR_MNU_RATE_APPLICATION), "&", ""), "")
+'		If nCtrlIdx > 0 Then
+'			'Create & Set the button tooltip
+'			Call RBNControlSetToolTipIdx(nCtrlIdx, PRGIGetApplicationName(), STRINGReplace(STRINGReplace(RESSTRNGGetString(STR_MNU_RATE_APPLICATION), "&", ""), "...", ""), "")
+'			'Set the button icon
+'			Call RBNControlSetIconsIdx(nCtrlIdx, CONTROL_SIZE_SMALL, PATH_IMAGES & "CommunityDownloads_16.png", "")
+'			Call RBNControlSetLeftMarginIdx(nCtrlIdx, 0)
+'			'Set Custom MapBasic Handle to the button
+'			Call RBNControlSetCustomMBXHandlerIdx(nCtrlIdx, "MENUGoToCommunityDownloads")
+'		End If
 
 		If SystemInfo(SYS_INFO_MIVERSION) < 1700 Then
 			'**Adding to the Map MiniToolbar
@@ -280,7 +282,7 @@ Dim	sFile As String
 OnError GoTo ErrorOccured
 
 	sFile = GetFolderPath$(FOLDER_MI_PREFERENCE) & FILE_INI
-	Call CONFIGWriteKey(sFile, "SETTINGS", "LANGUAGE", PRGIGetApplicationLanguageName())
+	Call CONFIGWriteKey(sFile, "SETTINGS", "LANGUAGE_CODE", PRGIGetApplicationLanguageCode())
 	Call CONFIGWriteKey(sFile, "SETTINGS", "INITIALSTATEISON", Int(mbInfoSelChangedHandlerEnabled))
 
 	Exit Sub
@@ -309,14 +311,15 @@ OnError GoTo ErrorOccured
 	sShowOnDeselect	= CONFIGReadKey(sFile, "SETTINGS", "SHOWINFOONDESELECT")
 
 	If FileExists(sFileUser) Then
-		msLanguage	= CONFIGReadKey(sFileUser, "SETTINGS", "LANGUAGE")
-'		Call DEBUGPrint("Found '" & msLanguage & "' in " & sFileUser)
+		msLanguage	= CONFIGReadKey(sFileUser, "SETTINGS", "LANGUAGE_CODE")
+		Call DEBUGPrint("Found '" & msLanguage & "' in " & sFileUser)
 		sState		= CONFIGReadKey(sFileUser, "SETTINGS", "INITIALSTATEISON")
 	Else
-		msLanguage	= CONFIGReadKey(sFile, "SETTINGS", "LANGUAGE")
-'		Call DEBUGPrint("Found '" & msLanguage & "' in " & sFile)
+		msLanguage	= CONFIGReadKey(sFile, "SETTINGS", "LANGUAGE_CODE")
+		Call DEBUGPrint("Found '" & msLanguage & "' in " & sFile)
 		sState		= CONFIGReadKey(sFile, "SETTINGS", "INITIALSTATEISON")
 	End If
+	msLanguage	= RTrim$(LTrim$(msLanguage))
 
 	If sState = "1" Then
 		'**The value get's switched by the first call to MENUSwitchDisplaySelInfoMENU

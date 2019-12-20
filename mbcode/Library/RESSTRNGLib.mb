@@ -1,0 +1,828 @@
+'*******************************************************************************
+'** 	Program:
+'** 	Modul:	RESSTRNGLib.mb
+'**		Source: MapBasic Sample files
+'*******************************************************************************
+
+'-------------------------------------
+Include "MapBasic.def"
+
+Include "RESSTRNGLib.def"
+Include "DEBUGLib.def"
+Include "ERRORLib.def"
+Include "FILELib.def"
+Include "CONFIGFILELib.def"
+
+Dim	msCharSet, msStringFilesFolder, marrResStrings(), marrStringFiles(), marrLanguages(), marrLanguageCodes() As String,
+	mnNumResStrings As Integer,
+	mbResStringsLoaded, mbUseUnicode As Logical
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes
+'Parameters:
+'	sCharSet = The CharSet to use, recommended CharSet is "UTF-8"
+'**********************************************************************************************''
+Sub RESSTRNGSetCharSet(ByVal sCharSet As String)
+
+OnError GoTo ErrorOccured
+
+	msCharSet = sCharSet
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "RESSTRNGSetCharSet")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes
+'Parameters:
+'	sCharSet = The CharSet to use, recommended CharSet is "UTF-8"
+'**********************************************************************************************''
+Sub RESSTRNGSetUseUnicode(ByVal bValue As String)
+
+OnError GoTo ErrorOccured
+
+	mbUseUnicode = bValue
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "RESSTRNGSetUseUnicode")
+	Call ERRShow()
+
+End Sub
+
+'**************************************************************************************
+'* Load the strings from the string resource file.
+'**************************************************************************************
+Function RESSTRNGLoadStrings(ByVal sFile As String) As Logical
+
+Dim	sInput As String,
+	nStringNumber, nStringCount As Integer
+
+OnError GoTo ErrorOccured
+
+	Print "RESSTRNGLoadStrings"
+
+	If msCharSet = "" Then
+		Open File sFile
+			For Input
+			As #1
+			CharSet SystemInfo(SYS_INFO_CHARSET)
+	Else
+		Open File sFile
+			For Input
+			As #1
+			CharSet msCharSet
+	End If
+
+	Do While Not EOF(1)
+		Line Input #1, sInput
+		sInput = RTrim$(LTrim$(sInput))
+		If sInput = "[STRINGS]" Then
+			Print "Found [STRINGS]"
+			Exit Do
+		End If
+	Loop
+
+	If sInput <> "[STRINGS]" Then
+		Exit Sub
+	End If
+
+	Redim marrResStrings(250)
+
+	nStringCount = 0
+	Do While Not EOF(1)
+		Line Input #1, sInput
+		nStringNumber = Val(sInput)
+		Print nStringNumber & " => " & sInput
+		If nStringNumber > 0 Then
+			' Trim off the leading space
+			sInput = LTrim$(RTrim$((sInput)))
+
+			' Get rid of the leading quote
+			sInput = Right$(sInput, Len(sInput)-1)
+			' Get rid of the trailing quote
+			sInput = Left$(sInput, Len(sInput)-1)
+			If nStringNumber > UBound(marrResStrings) Then
+				Redim marrResStrings(nStringNumber + Len(sInput))
+			End If
+			marrResStrings(nStringNumber) = sInput
+		End If
+		If Not EOF(1) Then
+			nStringCount = nStringCount + 1
+		End If
+	Loop
+
+	Redim marrResStrings(nStringNumber)
+
+	Close File #1
+	mnNumResStrings = nStringCount
+	mbResStringsLoaded = TRUE
+	RESSTRNGLoadStrings = TRUE
+
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "RESSTRNGLoadStrings: " & sFile)
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'	:
+'Return value:
+'
+'**********************************************************************************************''
+Function RESSTRNGLoadStringsByLanguage(ByVal sLanguage As String) As Logical	'Loads strings into memory
+
+Dim	nItem As Integer,
+	sLanguageCode As String
+
+OnError GoTo ErrorOccured
+
+RESSTRNGLoadStringsByLanguage = FALSE
+
+	If sLanguage = "" Then
+		sLanguageCode = SystemInfo(SYS_INFO_CULTURE)
+		RESSTRNGLoadStringsByLanguage = RESSTRNGLoadStringsByCode(sLanguageCode)
+		Exit Function
+	End If
+
+'	Call DEBUGPrint("1. Number of language files found: " & Ubound(marrStringFiles()))
+'	Call DEBUGPrint("Looking for language: " & sLanguage)
+	If Ubound(marrStringFiles()) = 0 Then
+		If RESSTRNGFindStringFiles(RESSTRNGGetStringFilesFolder()) = 0 Then
+'			Print "No language files (.str) were found. These are required for the application to work!"
+			Exit Function
+		End If
+'		Call DEBUGPrint("2. Number of language files found: " & Ubound(marrStringFiles()))
+	End If
+
+	nItem	= RESSTRNGGetStringFileItemByLanguage(sLanguage)
+	If nItem = 0 Then
+		nItem = 1
+	End If
+
+	RESSTRNGLoadStringsByLanguage = RESSTRNGLoadStrings(RESSTRNGGetStringFileName(nItem))
+
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "RESSTRNGLoadStringsByLanguage")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'	:
+'Return value:
+'
+'**********************************************************************************************''
+Function RESSTRNGLoadStringsByCode(ByVal sLanguageCode As String) As Logical	'Loads strings into memory
+
+Dim	nItem As Integer
+
+OnError GoTo ErrorOccured
+
+RESSTRNGLoadStringsByCode = FALSE
+
+	If sLanguageCode = "" Then
+		sLanguageCode = SystemInfo(SYS_INFO_CULTURE)
+	End If
+
+'	Call DEBUGPrint("1. Number of language files found: " & Ubound(marrStringFiles()))
+'	Call DEBUGPrint("Looking for language: " & sLanguage)
+	If Ubound(marrStringFiles()) = 0 Then
+		If RESSTRNGFindStringFiles(RESSTRNGGetStringFilesFolder()) = 0 Then
+'			Print "No language files (.str) were found. These are required for the application to work!"
+			Exit Function
+		End If
+'		Call DEBUGPrint("2. Number of language files found: " & Ubound(marrStringFiles()))
+	End If
+
+
+	nItem	= RESSTRNGGetStringFileItemByCode(sLanguageCode)
+	If nItem = 0 Then
+		nItem = 1
+	End If
+
+	RESSTRNGLoadStringsByCode = RESSTRNGLoadStrings(RESSTRNGGetStringFileName(nItem))
+
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "RESSTRNGLoadStringsByCode")
+	Call ERRShow()
+
+End Function
+
+'**************************************************************************************
+'* Load the strings from the string resource file.
+'**************************************************************************************
+Function RESSTRNGLoadStringsINI(ByVal sFile As String) As Logical
+
+Dim	nCount, nStringNotFound As Integer,
+	sString As String
+
+OnError GoTo ErrorOccured
+
+'	Redim marrResStrings(500)
+'
+'	if mbUseUnicode Then
+'		Do While TRUE
+'			nCount	= nCount + 1
+'
+'			sString	= CONFIGReadKeyUnicode(sFile, "STRINGS", Str$(nCount))
+'
+'			If sString = "" Then
+'				nStringNotFound = nStringNotFound + 1
+'
+'				If nStringNotFound = 5 Then
+'					'**5 strings not found in a row - let's skip
+'					Exit Do
+'				End If
+'			Else
+'				nStringNotFound = 0
+'
+'				' Get rid of the leading quote
+'				If Left$(sString, 1) = Chr$(34) Then
+'					sString = Mid$(sString, 2, Len(sString) - 1)
+'				End If
+'				' Get rid of the trailing quote
+'				If Right$(sString, 1) = Chr$(34) Then
+'					sString = Mid$(sString, 1, Len(sString) - 1)
+'				End If
+'
+'				If nCount > Ubound(marrResStrings) Then
+'					Redim marrResStrings(nCount + 250)
+'				End If
+'
+'				marrResStrings(nCount)	= sString
+'			End If
+'		Loop
+'	Else
+'		Do While TRUE
+'			nCount	= nCount + 1
+'
+'			sString	= CONFIGReadKey(sFile, "STRINGS", Str$(nCount))
+'
+'			If sString = "" Then
+'				nStringNotFound = nStringNotFound + 1
+'
+'				If nStringNotFound = 5 Then
+'					'**5 strings not found in a row - let's skip
+'					Exit Do
+'				End If
+'			Else
+'				nStringNotFound = 0
+'
+'				' Get rid of the leading quote
+'				If Left$(sString, 1) = Chr$(34) Then
+'					sString = Mid$(sString, 2, Len(sString) - 1)
+'				End If
+'				' Get rid of the trailing quote
+'				If Right$(sString, 1) = Chr$(34) Then
+'					sString = Mid$(sString, 1, Len(sString) - 1)
+'				End If
+'
+'				If nCount > Ubound(marrResStrings) Then
+'					Redim marrResStrings(nCount + 250)
+'				End If
+'
+'				marrResStrings(nCount)	= sString
+'			End If
+'		Loop
+'	End If
+'
+'	Redim marrResStrings(nCount)
+'
+'	mnNumResStrings		= nCount
+'	mbResStringsLoaded		= TRUE
+'	RESSTRNGLoadStringsINI	= TRUE
+
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "RESSTRNGLoadStringsINI: " & RESSTRNGLoadStrings)
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'	:
+'Return value:
+'
+'**********************************************************************************************''
+Function RESSTRNGFindStringFiles(ByVal sPath As String) As Integer
+
+Dim	i, nNumFiles As Integer,
+	sFile As String
+
+OnError GoTo ErrorOccured
+
+	nNumFiles = FILEFindFilesInFolder(sPath, "*.str")
+	Redim marrStringFiles(nNumFiles)
+	nNumFiles	= FILEGetFindFilesFileNames(marrStringFiles)
+
+
+	If nNumFiles = 0 Then
+		RESSTRNGFindStringFiles = 0
+		Call DEBUGPrint("Found no string files!")
+	Else
+		Call DEBUGPrint("Found " & nNumFiles & " string files!")
+		Redim marrLanguages(nNumFiles)
+		Redim marrLanguageCodes(nNumFiles)
+		For i = 1 To nNumFiles
+			Call DEBUGPrint("   " & i & " file: " & marrStringFiles(i))
+			marrLanguages(i)		= RESSTRNGGetStringFileLanguage(marrStringFiles(i))
+			marrLanguageCodes(i)	= RESSTRNGGetStringFileCode(marrStringFiles(i))
+			Call DEBUGPrint("   " & i & " " & marrLanguages(i))
+		Next
+
+		RESSTRNGFindStringFiles = nNumFiles
+	End If
+
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "RESSTRNGFindStringFiles")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'	:
+'Return value:
+'
+'**********************************************************************************************''
+Function RESSTRNGGetStringFileName(ByVal nFile As Integer) As String	'Returns the full path to one of the files found
+
+OnError GoTo ErrorOccured
+
+	RESSTRNGGetStringFileName = marrStringFiles(nFile)
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "RESSTRNGGetStringFileName")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'	:
+'Return value:
+'
+'**********************************************************************************************''
+Function RESSTRNGGetStringFileLanguageItem(ByVal nFile As Integer) As String	'Returns the language of one of the files found
+
+OnError GoTo ErrorOccured
+
+	RESSTRNGGetStringFileLanguageItem = RESSTRNGGetStringFileLanguage(marrStringFiles(nFile))
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "RESSTRNGGetStringFileLanguageItem")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'	:
+'Return value:
+'
+'**********************************************************************************************''
+Function RESSTRNGGetStringFileItemByLanguage(ByVal sLanguage As string) As Integer	'Returns the language of one of the files found
+
+Dim	i As Integer
+
+OnError GoTo ErrorOccured
+
+RESSTRNGGetStringFileItemByLanguage = 0
+
+'	Call DEBUGPrint("RESSTRNGGetStringFileItemByLanguage For i = 1 To " & Ubound(marrLanguages()) & " Looking for '" & sLanguage & "'")
+	For i = 1 To Ubound(marrLanguages())
+'		Call DEBUGPrint(i & ": " & marrLanguages(i))
+		If marrLanguages(i) = sLanguage Then
+'			Call DEBUGPrint("Found it!!: " & i & ": " & marrLanguages(i))
+			RESSTRNGGetStringFileItemByLanguage = i
+			Exit Function
+		End If
+	Next
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "RESSTRNGGetStringFileItemByLanguage")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'	:
+'Return value:
+'
+'**********************************************************************************************''
+Function RESSTRNGGetStringFileItemByCode(ByVal sLanguageCode As string) As Integer	'Returns the language of one of the files found
+
+Dim	i As Integer
+
+OnError GoTo ErrorOccured
+
+RESSTRNGGetStringFileItemByCode = 0
+
+'	Call DEBUGPrint("RESSTRNGGetStringFileItemByCode For i = 1 To " & Ubound(marrLanguageCodes()) & " Looking for '" & sLanguageCode & "'")
+	For i = 1 To Ubound(marrLanguageCodes())
+'		Call DEBUGPrint(i & ": " & marrLanguageCodes(i))
+		If marrLanguageCodes(i) = sLanguageCode Then
+'			Call DEBUGPrint("Found it!!: " & i & ": " & marrLanguageCodes(i))
+			RESSTRNGGetStringFileItemByCode = i
+			Exit Function
+		End If
+	Next
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "RESSTRNGGetStringFileItemByCode")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'	:
+'Return value:
+'
+'**********************************************************************************************''
+'Function RESSTRNGGetStringFileLanguage(ByVal sFile As String) As String	'Returns the language of one of the files found
+'
+'OnError GoTo ErrorOccured
+'
+'	If mbUseUnicode Then
+'		Call DEBUGPrint("Reading with Unicode")
+'		RESSTRNGGetStringFileLanguage = CONFIGReadKeyUnicode(sFile, "ADMIN", "LANGUAGE")
+'	Else
+'		Call DEBUGPrint("Reading with ANSI")
+'		RESSTRNGGetStringFileLanguage = CONFIGReadKey(sFile, "ADMIN", "LANGUAGE")
+'	End if
+'	Exit Function
+''-------------------------
+'ErrorOccured:
+'	Call ERRCreate(Err(), Error$(), "RESSTRNGGetStringFileLanguage")
+'	Call ERRShow()
+'
+'End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'	:
+'Return value:
+'
+'**********************************************************************************************''
+Function RESSTRNGGetStringFileLanguage( ByVal sFile As String) As String	'Returns the language of one of the files found
+
+Dim	sInput, sLanguage As String,
+	nChar As Integer
+
+OnError GoTo ErrorOccured
+
+RESSTRNGGetStringFileLanguage	= ""
+
+'	Print "Opening " & sFile & " Using CharSet " & msCharSet
+	If msCharSet = "" Then
+		Open File sFile
+			For Input
+			As #567
+			CharSet SystemInfo(SYS_INFO_CHARSET)
+	Else
+		Open File sFile
+			For Input
+			As #567
+			CharSet msCharSet
+	End If
+
+	Do While Not EOF(567)
+		Line Input #567, sInput
+		sInput = RTrim$(LTrim$(sInput))
+		If sInput = "[ADMIN]" Then
+'			Print "Found [ADMIN]"
+			Exit Do
+		End If
+	Loop
+
+	If sInput <> "[ADMIN]" Then
+		Exit Sub
+	End If
+
+	Do While Not EOF(567)
+		Line Input #567, sInput
+		sInput = RTrim$(LTrim$(sInput))
+
+		If Left$(sInput, Len("LANGUAGE")) = "LANGUAGE" Then
+'			Print "Found LANGUAGE"
+			sInput	= LTrim$(Mid$(sInput, Len("LANGUAGE") + 1, Len(sInput)))
+			nChar	= InStr(1, sInput, "=")
+			If nChar = 1 Then
+				sLanguage = Right$(sInput, Len(sInput) - nChar)
+				Print "Right$(" & sInput & ", Len(" & sInput & ") - " & nChar & ") => " & sLanguage
+				sLanguage = RTrim$(LTrim$(sLanguage))
+				If sLanguage <> "" Then
+					Close File #567
+					RESSTRNGGetStringFileLanguage	= sLanguage
+					Exit Function
+				End If
+			End If
+		End If
+	Loop
+
+	Close File #567
+
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "RESSTRNGGetStringFileLanguage")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'	:
+'Return value:
+'
+'**********************************************************************************************''
+Function RESSTRNGGetStringFileCode( ByVal sFile As String) As String	'Returns the 2-letter language Code of one of the files found
+
+Dim	sInput, sLanguageCode As String,
+	nChar As Integer
+
+OnError GoTo ErrorOccured
+
+RESSTRNGGetStringFileCode	= ""
+
+'	Print "Opening " & sFile & " Using CharSet " & msCharSet
+	If msCharSet = "" Then
+		Open File sFile
+			For Input
+			As #567
+			CharSet SystemInfo(SYS_INFO_CHARSET)
+	Else
+		Open File sFile
+			For Input
+			As #567
+			CharSet msCharSet
+	End If
+
+	Do While Not EOF(567)
+		Line Input #567, sInput
+		sInput = RTrim$(LTrim$(sInput))
+		If sInput = "[ADMIN]" Then
+'			Print "Found [ADMIN]"
+			Exit Do
+		End If
+	Loop
+
+	If sInput <> "[ADMIN]" Then
+		Exit Sub
+	End If
+
+	Do While Not EOF(567)
+		Line Input #567, sInput
+		sInput = RTrim$(LTrim$(sInput))
+
+		If Left$(sInput, Len("LANGUAGE_CODE")) = "LANGUAGE_CODE" Then
+'			Print "Found LANGUAGE_CODE"
+			sInput	= LTrim$(Mid$(sInput, Len("LANGUAGE_CODE") + 1, Len(sInput)))
+			nChar	= InStr(1, sInput, "=")
+			If nChar = 1 Then
+				sLanguageCode = Right$(sInput, Len(sInput) - nChar)
+'				Print "Right$(" & sInput & ", Len(" & sInput & ") - " & nChar & ") => " & sLanguageCode
+				sLanguageCode = RTrim$(LTrim$(sLanguageCode))
+				If sLanguageCode <> "" Then
+					Close File #567
+					RESSTRNGGetStringFileCode	= sLanguageCode
+					Exit Function
+				End If
+			End If
+		End If
+	Loop
+
+	Close File #567
+
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "RESSTRNGGetStringFileCode")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'	:
+'Return value:
+'
+'**********************************************************************************************''
+Function RESSTRNGGetStringFiles(	  arrFiles() As String
+							, arrlanguages() As String) As Integer		'Returns lists of language files and their languages
+
+Dim	i, nNumFiles As Integer
+
+OnError GoTo ErrorOccured
+
+RESSTRNGGetStringFiles = 0
+
+	If Ubound(marrStringFiles()) = 0 Then
+		If RESSTRNGFindStringFiles(RESSTRNGGetStringFilesFolder()) = 0 Then
+'			Print "No language files (.str) were found. These are required for the application to work!"
+			Exit Function
+		End If
+	End If
+
+	nNumFiles = Ubound(marrStringFiles())
+	Redim arrFiles(nNumFiles)
+	Redim arrlanguages(nNumFiles)
+
+	For i = 1 To nNumFiles
+		arrFiles(i)		= marrStringFiles(i)
+		arrlanguages(i)	= marrlanguages(i)
+	Next
+
+RESSTRNGGetStringFiles = Ubound(arrFiles)
+
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "RESSTRNGGetStringFiles")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'	:
+'Return value:
+'
+'**********************************************************************************************''
+Function RESSTRNGGetLanguages(	arrLanguages() As String) As Integer		'Returns lists of languages
+
+Dim	i, nNumFiles As Integer
+
+OnError GoTo ErrorOccured
+
+RESSTRNGGetLanguages = 0
+
+	If Ubound(marrStringFiles()) = 0 Then
+		If RESSTRNGFindStringFiles(RESSTRNGGetStringFilesFolder()) = 0 Then
+'			Print "No language files (.str) were found. These are required for the application to work!"
+			Exit Function
+		End If
+	End If
+
+	nNumFiles = Ubound(marrStringFiles())
+	Redim arrLanguages(nNumFiles)
+
+	For i = 1 To nNumFiles
+		arrLanguages(i)	= marrLanguages(i)
+	Next
+
+RESSTRNGGetLanguages = Ubound(arrLanguages)
+
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "RESSTRNGGetLanguages")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'	:
+'Return value:
+'
+'**********************************************************************************************''
+Function RESSTRNGGetLanguageCodes(	arrLanguages() As String) As Integer		'Returns lists of languages
+
+Dim	i, nNumFiles As Integer
+
+OnError GoTo ErrorOccured
+
+RESSTRNGGetLanguageCodes = 0
+
+	If Ubound(marrStringFiles()) = 0 Then
+		If RESSTRNGFindStringFiles(RESSTRNGGetStringFilesFolder()) = 0 Then
+'			Print "No language files (.str) were found. These are required for the application to work!"
+			Exit Function
+		End If
+	End If
+
+	nNumFiles = Ubound(marrStringFiles())
+	Redim arrLanguages(nNumFiles)
+
+	For i = 1 To nNumFiles
+		arrLanguages(i)	= marrLanguageCodes(i)
+	Next
+
+RESSTRNGGetLanguageCodes = Ubound(arrLanguages)
+
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "RESSTRNGGetLanguageCodes")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'
+'**********************************************************************************************''
+Sub RESSTRNGSetStringFilesFolder(ByVal sPath As String)
+
+OnError GoTo ErrorOccured
+
+	msStringFilesFolder	= sPath
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "RESSTRNGSetStringFilesFolder")
+	Call ERRShow()
+
+End Sub
+'**********************************************************************************************''
+Function RESSTRNGGetStringFilesFolder() As String
+
+OnError GoTo ErrorOccured
+
+	If msStringFilesFolder = "" Then
+		RESSTRNGGetStringFilesFolder = ApplicationDirectory$()
+	Else
+		RESSTRNGGetStringFilesFolder = FILEGetAbsolutePath(ApplicationDirectory$(), msStringFilesFolder)
+	End If
+
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "RESSTRNGGetStringFilesFolder")
+	Call ERRShow()
+
+End Function
+
+'**************************************************************************************
+'**************************************************************************************
+'*
+'*  PUBLIC ROUTINES
+'*
+'**************************************************************************************
+'**************************************************************************************
+
+'**************************************************************************************
+'* Get a string from the string resource file.
+'**************************************************************************************
+Function RESSTRNGGetString(ByVal iResId As Integer) As String
+
+	OnError Goto ErrorOccured
+
+	' If we haven't already loaded the strings from disk
+	If Not mbResStringsLoaded Then
+		Exit Function
+	End If
+
+	' Check the string resource id
+	If iResId < 1 Or iResId > mnNumResStrings Then
+		Print "Invalid String Resource Requested: " & iResId
+		Exit Function
+	End If
+
+	' Return the string to the caller
+	RESSTRNGGetString = marrResStrings(iResId)
+
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "RESSTRNGGetString: " & iResId)
+	Call ERRShow()
+
+End Function

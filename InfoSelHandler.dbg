@@ -1,11 +1,12 @@
-15:05:15 MENUDisplaySelectedInfo: Action
-15:05:41 MENUDisplaySelectedInfo: Action
-15:05:42 MENUDisplaySelectedInfo: Action
-15:05:42    One row was added to the selection
-15:05:46 MENUDisplaySelectedInfo: Action
-15:05:46    One row was removed from the selection
-15:05:46    Showing Rec 64 From table Kommuner_Indbyggere
-15:05:46 MENUDisplaySelectedInfo: Action
-15:05:51 MENUDisplaySelectedInfo: Action
-15:05:52 MENUDisplaySelectedInfo: Action
-15:05:52    One row was added to the selection
+10:49:32 Tab 0 is named TabHome but shown as 
+10:49:32 Tab 1 is named TabTable but shown as 
+10:49:32 Tab 2 is named TabMap but shown as 
+10:50:06 Found 'de' in C:\Users\PE009MO\AppData\Roaming\MapInfo\MapInfo\InfoSelHandler.ini
+10:50:06 Looking for language Code: 'de'
+10:50:06 1. Number of language files found: 0
+10:50:06 Looking for language Code: 'de'
+10:50:06 Found 4 string files!
+10:50:06 Language: 'Deutsch'
+10:50:07 Tab 0 is named TabHome but shown as 
+10:50:07 Tab 1 is named TabTable but shown as 
+10:50:07 Tab 2 is named TabMap but shown as 

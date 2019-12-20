@@ -1,17 +1,42 @@
 [Open Files]
 Active File Display Mode=1
-Active File Index=1
+Active File Index=2
 Open File Line0=0
 Open File Line1=0
-Open File Pos0=358
-Open File Pos1=649
-Open File Window Pos0=0,1,-1,-1,-1,-1,3,31,2290,1158
-Open File Window Pos1=0,1,-1,-1,-1,-1,3,31,2290,1158
-Open File0=D:\Dropbox (Horsboll-Moller)\3. MB_Kode\mbInfoSelHandler\mbcode\InfoSelHandler.mbp
-Open File1=D:\Dropbox (Horsboll-Moller)\3. MB_Kode\mbInfoSelHandler\mbcode\MENUInfoSelHandler.mb
-Open File2=
+Open File Line2=11175
+Open File Line3=2
+Open File Line4=2
+Open File Line5=2
+Open File Line6=2
+Open File Line7=0
+Open File Pos0=22
+Open File Pos1=358
+Open File Pos2=12541
+Open File Pos3=272
+Open File Pos4=276
+Open File Pos5=306
+Open File Pos6=266
+Open File Pos7=36
+Open File Window Pos0=0,1,-1,-1,-1,-1,3,31,2610,1248
+Open File Window Pos1=0,1,-1,-1,-1,-1,3,31,2610,1248
+Open File Window Pos2=0,1,-1,-1,-1,-1,3,31,2610,1248
+Open File Window Pos3=0,1,-1,-1,-1,-1,3,31,2610,1248
+Open File Window Pos4=0,1,-1,-1,-1,-1,3,31,2610,1248
+Open File Window Pos5=0,1,-1,-1,-1,-1,3,31,2610,1248
+Open File Window Pos6=0,1,-1,-1,-1,-1,3,31,2610,1248
+Open File Window Pos7=0,1,-1,-1,-1,-1,3,31,2610,1248
+Open File0=C:\Users\PE009MO\AppData\Roaming\MapInfo\MapInfo\InfoSelHandler.ini
+Open File1=D:\Dropbox (Horsboll-Moller)\3. MB_Kode\mbInfoSelHandler\mbcode\InfoSelHandler.mbp
+Open File2=D:\Dropbox (Horsboll-Moller)\3. MB_Kode\mbInfoSelHandler\mbcode\MENUInfoSelHandler.mb
+Open File3=D:\Dropbox (Horsboll-Moller)\3. MB_Kode\mbInfoSelHandler\Strings\Danish.str
+Open File4=D:\Dropbox (Horsboll-Moller)\3. MB_Kode\mbInfoSelHandler\Strings\English.str
+Open File5=D:\Dropbox (Horsboll-Moller)\3. MB_Kode\mbInfoSelHandler\Strings\French.str
+Open File6=D:\Dropbox (Horsboll-Moller)\3. MB_Kode\mbInfoSelHandler\Strings\German.str
+Open File7=D:\Dropbox (Horsboll-Moller)\3. MB_Kode\mbInfoSelHandler\InfoSelHandler.ini
+Open File8=
 Remember Files=1
 
 [Project Information]
 Project Start=E107040001000A000A0019002900000043
-Working Time=11034
+Working Time=31070
+
