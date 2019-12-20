@@ -100,8 +100,8 @@ OnError GoTo ErrorOccured
 	Call PRGISetApplicationDevelopedBy("Rémi Bizet and Peter Horsbøll Møller")
 	Call PRGISetDescription(RESSTRNGGetString(STR_DESCRIPTION)) '"This application shows the attributes of the selected record in the Info Window as soon as you select a record. It only works when a single record is selected."
 
-	If FileExists(FILE_HLP & " " & msLanguage & ".PDF") Then
-		Call PRGISetApplicationHelpFile(FILE_HLP & " " & msLanguage & ".PDF")
+	If FileExists(FILE_HLP & " " & PRGIGetApplicationLanguageName() & ".PDF") Then
+		Call PRGISetApplicationHelpFile(FILE_HLP & " " & PRGIGetApplicationLanguageName() & ".PDF")
 	Else
 		Call PRGISetApplicationHelpFile(FILE_HLP & ".PDF")
 	End If

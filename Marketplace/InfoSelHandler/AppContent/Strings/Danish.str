@@ -1,10 +1,12 @@
-﻿[ADMIN]
+﻿
+[ADMIN]
 LANGUAGE=Dansk
+LANGUAGE_CODE=da
 
 [STRINGS]
 1="Afslut program"
 2="Om..."
-3="&Bedøm applikationen på Community Downloads"
+3="&Bedøm applikationen på MapInfo Marketplace"
 4="Vis Info ved udvælgelse"
 5="!Deaktiver Info ved udvælgelse^Aktiver Info ved udvælgelse"
 6="Aktiver/Deaktiver visning af attributter i Info-vinduet ved udvælgelse."
