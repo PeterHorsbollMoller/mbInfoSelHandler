@@ -19,8 +19,8 @@ Include "Library\RibbonElements.def"
 
 Define xProgram 		"InfoSelHandler"
 Define xProgramMenu		"InfoSelHandler"
-Define xVersion 		"3.4.0"
-Define xYear			"2019"
+Define xVersion 		"3.5.0"
+Define xYear			"2020"
 Define xAddToMenuBar	FALSE
 
 Define FILE_INI				xProgram & ".ini"
@@ -312,11 +312,11 @@ OnError GoTo ErrorOccured
 
 	If FileExists(sFileUser) Then
 		msLanguage	= CONFIGReadKey(sFileUser, "SETTINGS", "LANGUAGE_CODE")
-		Call DEBUGPrint("Found '" & msLanguage & "' in " & sFileUser)
+'		Call DEBUGPrint("Found '" & msLanguage & "' in " & sFileUser)
 		sState		= CONFIGReadKey(sFileUser, "SETTINGS", "INITIALSTATEISON")
 	Else
 		msLanguage	= CONFIGReadKey(sFile, "SETTINGS", "LANGUAGE_CODE")
-		Call DEBUGPrint("Found '" & msLanguage & "' in " & sFile)
+'		Call DEBUGPrint("Found '" & msLanguage & "' in " & sFile)
 		sState		= CONFIGReadKey(sFile, "SETTINGS", "INITIALSTATEISON")
 	End If
 	msLanguage	= RTrim$(LTrim$(msLanguage))
